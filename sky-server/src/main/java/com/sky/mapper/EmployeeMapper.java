@@ -36,7 +36,6 @@ public interface EmployeeMapper {
     //@Select("select * from employee")
     Page<Employee> pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
     @Update("update employee set status = #{status} where id = #{id}")
-    @AutoFill(value = OperationType.UPDATE)
     void startOrStop(Integer status, Integer id);
 
     /*

@@ -112,8 +112,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void startOrStop(Integer status, Integer id) {
         employeeMapper.startOrStop(status,id);
     }
-
-
     /*
     *
     * 根据id查询员工*/
