@@ -12,7 +12,7 @@ public interface SetmealService {
 
     PageResult page(SetmealPageQueryDTO setmealPageQueryDTO);
 
-    void startOrStop(Long status, Long id);
+    void startOrStop(Integer status, Long id);
 
     void deleteBatch(List<Long> ids);
 

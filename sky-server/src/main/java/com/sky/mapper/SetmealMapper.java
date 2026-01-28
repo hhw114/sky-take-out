@@ -33,7 +33,7 @@ public interface SetmealMapper {
     List<SetmealVO> pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
 
     @Update("update setmeal set status = #{status} where id = #{id}")
-    void startOrStop(Long status, Long id);
+    void startOrStop(Integer status, Long id);
 
     void deleteBatch(List<Long> ids);
 
