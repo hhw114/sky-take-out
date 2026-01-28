@@ -32,4 +32,7 @@ public interface CategoryMapper {
 
     @Select("select * from category where type = #{type}")
     List<Category> list(Integer type);
+
+    @Select("select name from category where id = #{categoryId}")
+    String getNameById(Long categoryId);
 }
