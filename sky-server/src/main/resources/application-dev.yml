@@ -11,3 +11,8 @@ sky:
     access-key-secret: ${OSS_ACCESS_KEY_SECRET}
     endpoint: oss-cn-wuhan-lr.aliyuncs.com
     access-key-id: ${OSS_ACCESS_KEY_ID}
+  redis:
+    host: localhost
+    password: 123456
+    port: 6379
+    database: 0
