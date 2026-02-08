@@ -30,7 +30,7 @@ public interface CategoryMapper {
     @Delete("delete from category where id = #{id}")
     void deleteById(Integer id);
 
-    @Select("select * from category where type = #{type}")
+    //@Select("select * from category where type = #{type}")
     List<Category> list(Integer type);
 
     @Select("select name from category where id = #{categoryId}")
