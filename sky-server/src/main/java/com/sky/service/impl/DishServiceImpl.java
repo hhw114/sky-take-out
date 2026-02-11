@@ -18,6 +18,8 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,7 @@ public class DishServiceImpl implements DishService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "dishCache", allEntries = true)
     public void saveWithFlavor(DishDTO dishDTO) {
         //向菜品表插入一条数据
         Dish dish=new Dish();
@@ -70,6 +73,7 @@ public class DishServiceImpl implements DishService {
     }
     @Transactional
     @Override
+    @CacheEvict(value = "dishCache", allEntries = true)
     public void deleteBatch(List<Long> ids) {
         //判断菜品能否删除--是否存在起售菜品
         ids.forEach(id->{
@@ -114,6 +118,7 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    @CacheEvict(value = "dishCache", allEntries = true)
     public void updateWithFlavor(DishDTO dishDTO) {
         Dish dish=new Dish();
         BeanUtils.copyProperties(dishDTO,dish);
@@ -133,6 +138,7 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    @CacheEvict(value = "dishCache", allEntries = true)
     public void startOrStop(Long status, Long id) {
         dishMapper.startOrStop(status,id);
     }
@@ -148,6 +154,7 @@ public class DishServiceImpl implements DishService {
      * @param dish
      * @return
      */
+    @Cacheable(cacheNames = "dishCache", key = "#dish.categoryId")
     public List<DishVO> listWithFlavor(Dish dish) {
         List<Dish> dishList = dishMapper.list(dish);
 
