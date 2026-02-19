@@ -34,4 +34,15 @@ public interface OrderService {
     * 根据id查询订单明细
     * */
     OrderVO getOrderDetail(Long id);
+
+    /*
+    * 取消订单
+    * */
+    void userCancel(Long id) throws Exception;
+
+    /*
+    *
+    * 再来一单
+    * */
+    void repeat(Long id);
 }
