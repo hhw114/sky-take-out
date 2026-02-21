@@ -45,4 +45,10 @@ public interface OrderService {
     * 再来一单
     * */
     void repeat(Long id);
+
+    /*
+    *
+    * 管理端搜索订单
+    * */
+    PageResult adminPageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 }

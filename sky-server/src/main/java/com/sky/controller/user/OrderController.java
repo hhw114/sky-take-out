@@ -43,6 +43,10 @@ public class OrderController {
         log.info("订单支付：{}", ordersPaymentDTO);
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         log.info("生成预支付交易单：{}", orderPaymentVO);
+
+        //修改支付逻辑，直接成功
+        orderService.paySuccess(ordersPaymentDTO.getOrderNumber());
+
         return Result.success(orderPaymentVO);
     }
 

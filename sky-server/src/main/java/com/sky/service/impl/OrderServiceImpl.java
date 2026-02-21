@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -110,12 +111,14 @@ public class OrderServiceImpl implements OrderService {
         User user = userMapper.getById(userId);
 
         //调用微信支付接口，生成预支付交易单
-        JSONObject jsonObject = weChatPayUtil.pay(
+        /*JSONObject jsonObject = weChatPayUtil.pay(
                 ordersPaymentDTO.getOrderNumber(), //商户订单号
                 new BigDecimal(0.01), //支付金额，单位 元
                 "苍穹外卖订单", //商品描述
                 user.getOpenid() //微信用户的openid
-        );
+        );*/
+        //自己new一个jsonobject
+        JSONObject jsonObject = new JSONObject();
 
         if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
             throw new OrderBusinessException("该订单已支付");
@@ -252,5 +255,50 @@ public class OrderServiceImpl implements OrderService {
         }
 
 
+    }
+
+
+    /*
+    * 管理端搜索订单
+    *
+    * */
+    @Override
+    public PageResult adminPageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+        //开启一页
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        List<Orders> allOrders = orderMapper.adminpageQuery(ordersPageQueryDTO);
+        Page p =(Page) allOrders;
+        long total = p.getTotal();
+        List<OrderVO> list = new ArrayList<>();
+        //讲order基本数据喝orderDishes字段放入OrderVO,再把orderVO假如list中
+        if (allOrders !=null && allOrders.size()>0){
+            for (Orders orders : allOrders) {
+                OrderVO orderVO =new OrderVO();
+                BeanUtils.copyProperties(orders,orderVO);
+                orderVO.setOrderDishes(orderDishes(orders));
+                list.add(orderVO);
+            }
+        }
+        PageResult pageResult = new PageResult(total,list);
+        return pageResult;
+    }
+
+    /*
+    *
+    * 根据orderid拼接orderDishes字段
+    *
+    * */
+    private String orderDishes(Orders orders){
+        // 查询订单菜品详情信息（订单中的菜品和数量）
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        // 将每一条订单菜品信息拼接为字符串（格式：宫保鸡丁*3；）
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + ";";
+            return orderDish;
+        }).collect(Collectors.toList());
+
+        // 将该订单对应的所有菜品信息拼接在一起
+        return String.join("", orderDishList);
     }
 }
