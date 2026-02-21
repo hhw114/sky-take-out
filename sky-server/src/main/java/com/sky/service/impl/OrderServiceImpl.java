@@ -5,9 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -17,6 +15,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -281,6 +280,113 @@ public class OrderServiceImpl implements OrderService {
         }
         PageResult pageResult = new PageResult(total,list);
         return pageResult;
+    }
+
+    /*
+    * 各状态订单数目统计
+    * */
+    @Override
+    public OrderStatisticsVO statics() {
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        //2待接单 3已接单 4派送中
+        OrderStatisticsVO orderStatisticsVO=orderMapper.statics();
+        return orderStatisticsVO;
+    }
+    /*
+    * 接单
+    * */
+    @Override
+    public void confirm(Long id) {
+        //检查是否是待接单状态
+        Orders order = orderMapper.getById(id);
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (!order.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //接单
+        order.setStatus(Orders.CONFIRMED);
+        orderMapper.update(order);
+    }
+    /*
+    * 拒单
+    * */
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        //检查是否是待拒单状态
+        Orders order = orderMapper.getById(ordersRejectionDTO.getId());
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (!order.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //拒单
+        order.setStatus(Orders.CANCELLED);
+        order.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        order.setCancelTime(LocalDateTime.now());
+        orderMapper.update(order);
+        //退款，不必完成，因为没有实现支付系统
+    }
+    /*
+     * 管理端取消订单
+     * */
+    @Override
+    public void admincancel(OrdersCancelDTO ordersCancelDTO) {
+        //检查是否是待取消订单状态
+        Orders order = orderMapper.getById(ordersCancelDTO.getId());
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (order.getStatus() != Orders.PAID && order.getStatus() != Orders.CONFIRMED && order.getStatus() != Orders.DELIVERY_IN_PROGRESS) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //取消订单
+        order.setStatus(Orders.CANCELLED);
+        order.setCancelReason(ordersCancelDTO.getCancelReason());
+        order.setCancelTime(LocalDateTime.now());
+        orderMapper.update(order);
+        //退款，不必完成，因为没有实现支付系统
+    }
+    /*
+    * 派送订单
+    * */
+    @Override
+    public void delivery(Long id) {
+        //检查是否为待派送状态
+        Orders order = orderMapper.getById(id);
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (order.getStatus() != Orders.CONFIRMED){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //派送
+        order.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        //立刻送出
+        //配送状态  1立即送出  0选择具体时间
+        order.setDeliveryStatus(1);
+        orderMapper.update(order);
+    }
+    /*
+    * 完成订单
+    * */
+    @Override
+    public void complete(Long id) {
+        //检查是否为待完成状态
+        Orders order = orderMapper.getById(id);
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (order.getStatus() != Orders.DELIVERY_IN_PROGRESS){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //完成订单
+        order.setStatus(Orders.COMPLETED);
+        order.setDeliveryTime(LocalDateTime.now());
+        orderMapper.update(order);
     }
 
     /*

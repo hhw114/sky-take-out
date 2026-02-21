@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.core.annotation.Order;
@@ -44,4 +45,11 @@ public interface OrderMapper {
     * 管理端搜索订单
     * */
     List<Orders> adminpageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    @Select("SELECT " +
+            "SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS toBeConfirmed, " +
+            "SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) AS confirmed, " +
+            "SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) AS deliveryInProgress " +
+            "FROM orders")
+    OrderStatisticsVO statics();
 }
