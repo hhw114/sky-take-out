@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.core.annotation.Order;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -52,4 +53,10 @@ public interface OrderMapper {
             "SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) AS deliveryInProgress " +
             "FROM orders")
     OrderStatisticsVO statics();
+
+    /*
+    * 根据status和超过15分钟订单搜索
+    * */
+    @Select("select * from orders where status = #{pendingPayment} && order_time < #{time}")
+    List<Orders> getByStatusAndTime(Integer pendingPayment, LocalDateTime time);
 }
