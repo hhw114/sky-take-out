@@ -7,6 +7,7 @@ import com.sky.vo.UserReportVO;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 public interface ReportService {
@@ -29,4 +30,9 @@ public interface ReportService {
     * 查询top10热销商品
     * */
     SalesTop10ReportVO top10(LocalDate begin, LocalDate end);
+
+    /*
+    * 导出运营数据报表
+    * */
+    void exportBusinessData(HttpServletResponse response);
 }
